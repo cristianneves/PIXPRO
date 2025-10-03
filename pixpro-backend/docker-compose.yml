@@ -1,0 +1,43 @@
+# Versão do Docker Compose
+version: '3.8'
+
+# Define os serviços (contêineres) que vamos usar
+services:
+  # Nome do nosso serviço de banco de dados
+  postgres:
+    # Imagem oficial do PostgreSQL que será baixada
+    image: postgres:15
+    # Nome que daremos ao contêiner quando ele estiver rodando
+    container_name: pixpro-postgres
+    # Variáveis de ambiente para configurar o PostgreSQL
+    environment:
+      # Define o usuário do banco. Deve ser o mesmo do application.properties.
+      POSTGRES_USER: postgres
+      # Define a senha do banco. Deve ser a mesma do application.properties.
+      POSTGRES_PASSWORD: admin
+      # Cria o banco de dados inicial. Deve ser o mesmo do application.properties.
+      POSTGRES_DB: pixpro_auth_db
+    # Mapeia a porta 5432 do contêiner para a porta 5432 da sua máquina
+    ports:
+      - "5432:5432"
+    # Garante que os dados do banco não sejam perdidos quando o contêiner for recriado
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  postgres-project:
+    image: postgres:15
+    container_name: pixpro-postgres-project
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: pixpro_project_db
+    ports:
+      # Mapeamos para uma porta diferente na nossa máquina (5433) para evitar conflitos
+      - "5433:5432"
+    volumes:
+      - postgres-project-data:/var/lib/postgresql/data
+
+# Define os volumes nomeados
+volumes:
+  postgres-data:
+  postgres-project-data:
