@@ -31,15 +31,17 @@ public class ProjectService {
     private final KafkaProducerService kafkaProducerService;
     private final ObjectMapper objectMapper;
     private static final Logger logger = LoggerFactory.getLogger(ProjectService.class);
+    private final StorageService storageService;
 
 
 
     public ProjectService(ProjectRepository projectRepository, ImageMetadataRepository imageMetadataRepository,
-                          KafkaProducerService kafkaProducerService, ObjectMapper objectMapper) {
+                          KafkaProducerService kafkaProducerService, ObjectMapper objectMapper, StorageService storageService) {
         this.projectRepository = projectRepository;
         this.imageMetadataRepository = imageMetadataRepository;
         this.kafkaProducerService = kafkaProducerService;
         this.objectMapper = objectMapper;
+        this.storageService = storageService;
     }
 
 
@@ -106,31 +108,35 @@ public class ProjectService {
      * @return Uma lista com os metadados das imagens que foram criadas.
      */
     @Transactional
-    @SneakyThrows // Anotação do Lombok para não precisar de try-catch na serialização
     public List<ImageMetadataDto> addImagesToProject(Long projectId, Long userId, List<MultipartFile> files) {
         Project project = findProjectById(projectId, userId);
 
         List<ImageMetadata> newImagesMetadata = files.stream().map(file -> {
+            // A. Primeiro, faz o upload do arquivo para o MinIO e obtém sua chave única.
+            String storageKey = storageService.uploadFile(file);
+            logger.info(">>> Arquivo {} salvo no MinIO com a chave: {}", file.getOriginalFilename(), storageKey);
+
+            // B. Cria a entidade de metadados com o caminho real.
             ImageMetadata metadata = new ImageMetadata();
             metadata.setFileName(file.getOriginalFilename());
             metadata.setProject(project);
             metadata.setStatus(ProcessingStatus.UPLOAD_PENDING);
-
+            metadata.setOriginalStoragePath(storageKey); // Salva o caminho real retornado pelo MinIO
 
             return metadata;
         }).collect(Collectors.toList());
 
+        // Salva todos os metadados no banco
         List<ImageMetadata> savedMetadata = imageMetadataRepository.saveAll(newImagesMetadata);
 
-        // 4. Para cada imagem salva, envie uma mensagem para o Kafka
+        // Envia uma mensagem para o Kafka para cada imagem salva
         savedMetadata.forEach(metadata -> {
-            // Criamos um DTO/Map para a mensagem do Kafka
             var kafkaMessage = Map.of(
                     "imageId", metadata.getId(),
-                    "originalStoragePath", "path/to/be/defined.jpg" // Placeholder por enquanto
+                    // C. Envia a mensagem com o caminho real do arquivo
+                    "originalStoragePath", metadata.getOriginalStoragePath()
             );
 
-            // Convertemos para JSON e enviamos
             try {
                 kafkaProducerService.sendImageProcessingRequest(
                         "image-processing-queue",
@@ -189,7 +195,6 @@ public class ProjectService {
     @Transactional
     public void deleteImageFromProject(Long projectId, Long imageId, Long userId) {
         // 1. Primeiro, garante que o usuário tem acesso ao projeto.
-        // Se não tiver, o método abaixo lançará uma exceção e a operação será interrompida.
         findProjectById(projectId, userId);
 
         // 2. Busca os metadados da imagem no banco de dados.
