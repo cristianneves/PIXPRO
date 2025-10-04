@@ -1,13 +1,17 @@
 package br.com.pixpro.project_service.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "image_metadata")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(exclude = {"project"})
+@ToString(exclude = {"project"})
 public class ImageMetadata {
 
     @Id
@@ -29,6 +33,7 @@ public class ImageMetadata {
     // Esta é a chave estrangeira (project_id) no banco de dados.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
+    @JsonBackReference
     private Project project;
 
     @Column(updatable = false)

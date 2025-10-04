@@ -1,7 +1,8 @@
 package br.com.pixpro.project_service.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -9,7 +10,10 @@ import java.util.List;
 
 @Entity
 @Table(name = "projects")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode(exclude = {"images"})
+@ToString(exclude = {"images"})
 public class Project {
 
     @Id
@@ -34,6 +38,7 @@ public class Project {
             cascade = CascadeType.ALL, // Se apagar o projeto, apaga as imagens junto
             orphanRemoval = true // Remove imagens da lista se elas não tiverem mais um projeto
     )
+    @JsonManagedReference
     private List<ImageMetadata> images = new ArrayList<>();
 
     @PrePersist

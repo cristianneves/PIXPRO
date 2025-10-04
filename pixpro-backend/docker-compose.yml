@@ -1,28 +1,18 @@
-# Versão do Docker Compose
 version: '3.8'
 
-# Define os serviços (contêineres) que vamos usar
 services:
-  # Nome do nosso serviço de banco de dados
-  postgres:
-    # Imagem oficial do PostgreSQL que será baixada
+  # BANCOS DE DADOS
+  postgres-auth:
     image: postgres:15
-    # Nome que daremos ao contêiner quando ele estiver rodando
-    container_name: pixpro-postgres
-    # Variáveis de ambiente para configurar o PostgreSQL
+    container_name: pixpro-postgres-auth
     environment:
-      # Define o usuário do banco. Deve ser o mesmo do application.properties.
       POSTGRES_USER: postgres
-      # Define a senha do banco. Deve ser a mesma do application.properties.
       POSTGRES_PASSWORD: admin
-      # Cria o banco de dados inicial. Deve ser o mesmo do application.properties.
       POSTGRES_DB: pixpro_auth_db
-    # Mapeia a porta 5432 do contêiner para a porta 5432 da sua máquina
     ports:
-      - "5432:5432"
-    # Garante que os dados do banco não sejam perdidos quando o contêiner for recriado
+      - "5434:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-auth-data:/var/lib/postgresql/data
 
   postgres-project:
     image: postgres:15
@@ -32,12 +22,49 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: pixpro_project_db
     ports:
-      # Mapeamos para uma porta diferente na nossa máquina (5433) para evitar conflitos
       - "5433:5432"
     volumes:
       - postgres-project-data:/var/lib/postgresql/data
 
-# Define os volumes nomeados
+  # KAFKA E ZOOKEEPER (SISTEMA DE MENSAGERIA)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.2.1
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.2.1
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+
+  # MINIO (ARMAZENAMENTO DE OBJETOS COMPATÍVEL COM S3)
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"  # API
+      - "9001:9001"  # Console Web
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+
 volumes:
-  postgres-data:
+  postgres-auth-data:
   postgres-project-data:
+  minio-data:
