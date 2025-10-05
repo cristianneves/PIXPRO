@@ -133,7 +133,7 @@ public class ProjectService {
         savedMetadata.forEach(metadata -> {
             var kafkaMessage = Map.of(
                     "imageId", metadata.getId(),
-                    // C. Envia a mensagem com o caminho real do arquivo
+                    "userId", userId,
                     "originalStoragePath", metadata.getOriginalStoragePath()
             );
 

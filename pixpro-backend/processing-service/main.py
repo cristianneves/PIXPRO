@@ -36,14 +36,43 @@ kafka_producer = KafkaProducer(
 app = Flask(__name__)
 
 def process_image_task(image_data):
+    """
+    Executa a tarefa de processamento para uma única imagem.
+    """
     image_id = image_data.get('imageId')
+    user_id = image_data.get('userId')
     original_path = image_data.get('originalStoragePath')
     processed_path = f"processed_{original_path}"
     status = "FAILED" # Define um status padrão de falha
+    response = None # Inicializa a variável de resposta
 
     try:
         print(f"  [Processing imageId: {image_id}] Baixando do MinIO: {original_path}")
-        # ... (lógica de download, processamento e upload) ...
+
+        # 1. Baixa a imagem do MinIO
+        response = minio_client.get_object(MINIO_BUCKET_NAME, original_path)
+        image_bytes = response.read()
+
+        # 2. Processa a imagem (lógica de "IA" com Pillow)
+        print(f"  [Processing imageId: {image_id}] Aplicando filtro grayscale...")
+        image = Image.open(io.BytesIO(image_bytes))
+        grayscale_image = image.convert('L')
+
+        # Salva a imagem processada em um buffer de memória
+        buffer = io.BytesIO()
+        grayscale_image.save(buffer, format='JPEG')
+        buffer.seek(0) # Retorna ao início do buffer para leitura
+
+        # 3. Faz o upload da imagem processada de volta para o MinIO
+        print(f"  [Processing imageId: {image_id}] Salvando resultado no MinIO como: {processed_path}")
+        minio_client.put_object(
+            MINIO_BUCKET_NAME,
+            processed_path,
+            data=buffer,
+            length=buffer.getbuffer().nbytes,
+            content_type='image/jpeg'
+        )
+
         print(f"  [Processing imageId: {image_id}] Tarefa concluída com sucesso.")
         status = "COMPLETED"
 
@@ -52,12 +81,15 @@ def process_image_task(image_data):
         # O status permanecerá "FAILED"
 
     finally:
-        # Garante que a conexão de resposta seja fechada
-        # ...
+        # Garante que a conexão de resposta do MinIO seja fechada, liberando recursos
+        if response:
+            response.close()
+            response.release_conn()
 
         # 5. Publica a mensagem de resultado no Kafka
         result_message = {
             "imageId": image_id,
+            "userId": user_id,
             "status": status,
             "processedStoragePath": processed_path if status == "COMPLETED" else None
         }
