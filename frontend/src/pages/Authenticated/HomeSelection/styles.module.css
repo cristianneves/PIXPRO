@@ -1,0 +1,134 @@
+/* Animação de entrada suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pageWrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-top: 2rem; /* Mais espaço para a saudação */
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* --- Cabeçalho --- */
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.title {
+  font-size: 2.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+/* --- Grid de Seleção --- */
+.selectionGrid {
+  display: grid;
+  /* Cria um grid responsivo que se adapta */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+/* --- Card de Opção --- */
+.optionCard {
+  /* Estilo do Card */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  text-decoration: none;
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+
+  /* Animação de "lift" */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.optionCard:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent-blue);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.iconWrapper {
+  margin-bottom: 1.5rem;
+}
+
+.optionTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem 0;
+}
+
+.optionDescription {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.goArrow {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  transition: transform 0.2s ease;
+}
+
+.optionCard:hover .goArrow {
+  transform: translateX(5px);
+  color: var(--accent-blue);
+}
+
+/* --- Estado Desabilitado --- */
+.disabled {
+  background: var(--background); /* Fundo mais escuro para parecer desabilitado */
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+}
+
+.disabled .iconWrapper {
+  color: var(--text-secondary);
+  opacity: 0.5;
+}
+
+.disabled .optionTitle {
+  color: var(--text-secondary);
+}
+
+.disabled .optionDescription {
+  opacity: 0.7;
+}
+
+.comingSoon {
+  position: absolute;
+  right: 1.5rem;
+  top: 1.5rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--background);
+  background-color: var(--text-secondary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}

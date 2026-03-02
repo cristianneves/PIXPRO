@@ -1,0 +1,234 @@
+asyncapi: 3.0.0
+info:
+  title: PixPro WebSocket API
+  version: 1.0.0
+  description: |
+    Especificação AsyncAPI para os hubs WebSocket do projeto PixPro.
+    
+    O sistema utiliza WebSockets para notificações em tempo real entre os serviços
+    backend e a aplicação frontend, principalmente para:
+    - Notificações de processamento de imagens
+    - Atualizações de status de projetos
+    
+  contact:
+    name: PixPro Team
+    email: support@pixpro.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  production:
+    host: api.pixpro.com
+    protocol: wss
+    description: Servidor de produção PixPro
+  development:
+    host: localhost:8082
+    protocol: ws
+    description: Servidor de desenvolvimento (notification-service)
+
+channels:
+  notifications:
+    address: /ws/notifications
+    description: |
+      Canal principal de notificações em tempo real.
+      Utilizado para enviar atualizações de processamento de imagens
+      e outros eventos relevantes para o usuário autenticado.
+    messages:
+      processingUpdate:
+        $ref: '#/components/messages/ProcessingUpdate'
+    bindings:
+      ws:
+        method: GET
+        headers:
+          type: object
+          properties:
+            Authorization:
+              type: string
+              description: Bearer token JWT para autenticação
+              example: "Bearer eyJhbGciOiJIUzI1NiIs..."
+
+  imageProcessingResults:
+    address: image-processing-results
+    description: |
+      Canal interno Kafka para resultados de processamento de imagens.
+      Mensagens são consumidas pelo notification-service e convertidas
+      para notificações WebSocket.
+    messages:
+      imageProcessingResult:
+        $ref: '#/components/messages/ImageProcessingResult'
+    bindings:
+      kafka:
+        topic: image-processing-results
+
+operations:
+  sendNotification:
+    action: send
+    channel:
+      $ref: '#/channels/notifications'
+    summary: Enviar notificação para usuário conectado
+    description: |
+      Operação para envio de notificações em tempo real via WebSocket.
+      Utilizada pelo notification-service para informar sobre:
+      - Status de processamento de imagens
+      - Atualizações de projetos
+      - Outros eventos relevantes
+    messages:
+      - $ref: '#/channels/notifications/messages/processingUpdate'
+
+  receiveImageProcessingResult:
+    action: receive
+    channel:
+      $ref: '#/channels/imageProcessingResults'
+    summary: Receber resultado de processamento de imagem
+    description: |
+      Operação interna para consumo de mensagens Kafka com resultados
+      de processamento. Estes resultados são então convertidos em
+      notificações WebSocket para os usuários.
+    messages:
+      - $ref: '#/channels/imageProcessingResults/messages/imageProcessingResult'
+
+components:
+  messages:
+    ProcessingUpdate:
+      name: ProcessingUpdate
+      title: Atualização de Processamento
+      summary: Notificação sobre status de processamento de imagem
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ProcessingUpdatePayload'
+      examples:
+        - name: Processamento Concluído
+          summary: Imagem processada com sucesso
+          payload:
+            type: PROCESSING_UPDATE
+            imageId: 12345
+            status: COMPLETED
+            processedAt: "2025-11-20T15:30:00Z"
+        - name: Processamento Falhado
+          summary: Erro no processamento da imagem
+          payload:
+            type: PROCESSING_UPDATE
+            imageId: 12346
+            status: FAILED
+            error: "Formato de imagem não suportado"
+
+    ImageProcessingResult:
+      name: ImageProcessingResult
+      title: Resultado de Processamento (Kafka)
+      summary: Mensagem Kafka com resultado de processamento
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/ImageProcessingResultPayload'
+      examples:
+        - name: Resultado Sucesso
+          summary: Processamento bem-sucedido
+          payload:
+            userId: 1001
+            imageId: 12345
+            status: COMPLETED
+            originalUrl: "https://storage.pixpro.com/original/12345.jpg"
+            processedUrl: "https://storage.pixpro.com/processed/12345.jpg"
+            processedAt: "2025-11-20T15:30:00Z"
+
+  schemas:
+    ProcessingUpdatePayload:
+      type: object
+      required:
+        - type
+        - imageId
+        - status
+      properties:
+        type:
+          type: string
+          enum:
+            - PROCESSING_UPDATE
+          description: Tipo da notificação
+          example: PROCESSING_UPDATE
+        imageId:
+          type: integer
+          format: int64
+          description: ID único da imagem processada
+          example: 12345
+        status:
+          type: string
+          enum:
+            - PROCESSING
+            - COMPLETED
+            - FAILED
+          description: Status atual do processamento
+          example: COMPLETED
+        processedAt:
+          type: string
+          format: date-time
+          description: Timestamp da conclusão do processamento
+          example: "2025-11-20T15:30:00Z"
+        error:
+          type: string
+          description: Mensagem de erro (presente apenas quando status = FAILED)
+          example: "Formato de imagem não suportado"
+
+    ImageProcessingResultPayload:
+      type: object
+      required:
+        - userId
+        - imageId
+        - status
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: ID do usuário proprietário da imagem
+          example: 1001
+        imageId:
+          type: integer
+          format: int64
+          description: ID único da imagem processada
+          example: 12345
+        status:
+          type: string
+          enum:
+            - PROCESSING
+            - COMPLETED
+            - FAILED
+          description: Status do processamento
+          example: COMPLETED
+        originalUrl:
+          type: string
+          format: uri
+          description: URL da imagem original no storage
+          example: "https://storage.pixpro.com/original/12345.jpg"
+        processedUrl:
+          type: string
+          format: uri
+          description: URL da imagem processada (presente quando status = COMPLETED)
+          example: "https://storage.pixpro.com/processed/12345.jpg"
+        processedAt:
+          type: string
+          format: date-time
+          description: Timestamp da conclusão do processamento
+          example: "2025-11-20T15:30:00Z"
+        metadata:
+          type: object
+          description: Metadados adicionais do processamento
+          additionalProperties: true
+          example:
+            filters: ["blur", "sharpen"]
+            fileSize: 2048576
+            dimensions: "1920x1080"
+
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Autenticação JWT Bearer token.
+        
+        O token deve ser incluído no cabeçalho Authorization durante o handshake
+        WebSocket ou nas requisições HTTP. O token contém informações do usuário
+        autenticado e é validado pelo JwtHandshakeInterceptor.
+        
+        Exemplo: `Authorization: Bearer eyJhbGciOiJIUzI1NiIs...`
+
+defaultContentType: application/json

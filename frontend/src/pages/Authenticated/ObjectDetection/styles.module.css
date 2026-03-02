@@ -1,0 +1,200 @@
+.pageWrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Layout de duas colunas para o resultado */
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Área de Upload */
+.uploadSection {
+  /* --- CORREÇÃO: Layout Flexbox --- */
+  display: flex; /* Transforma o contêiner em um flex container */
+  flex-direction: column; /* Organiza os itens verticalmente */
+  align-items: center; /* Centraliza os itens horizontalmente */
+  justify-content: center; /* Centraliza os itens verticalmente */
+  gap: 1.5rem; /* Adiciona espaçamento entre os itens */
+  /* --- FIM DA CORREÇÃO --- */
+
+  background: var(--surface);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 3rem; /* Aumentei um pouco o padding para mais espaço */
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  min-height: 250px; /* Garante uma altura mínima para o "dropzone" */
+}
+
+.uploadSection:hover {
+  border-color: var(--accent-purple);
+  background: rgba(147, 51, 234, 0.05);
+  color: var(--accent-purple);
+}
+
+.uploadSection h2 {
+    margin: 0; /* Remove margem padrão para não interferir no flex gap */
+    font-size: 1.5rem; /* Ajuste o tamanho da fonte */
+    color: var(--text-primary); /* Use a cor principal para o título */
+}
+
+.uploadSection p {
+    margin: 0; /* Remove margem padrão */
+    font-size: 0.95rem; /* Ajuste o tamanho da fonte */
+    max-width: 350px; /* Limita a largura do texto para melhor leitura */
+}
+
+/* Opcional: Estilo para o ícone dentro da seção de upload */
+.uploadSection svg {
+  color: var(--text-secondary); /* Cor padrão do ícone */
+  transition: color 0.2s ease;
+}
+
+.uploadSection:hover svg {
+  color: var(--accent-purple); /* Cor do ícone no hover */
+}
+
+.hiddenInput {
+  display: none;
+}
+
+/* Visualização da Imagem */
+.imageContainer {
+  background: var(--surface);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* Área de Resultados (Tags) */
+.resultsContainer {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.resultsTitle {
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tagsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Estilo das "Chips" (Tags) */
+.tag {
+  background: rgba(147, 51, 234, 0.15);
+  color: #d8b4fe; /* Roxo claro */
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  animation: popIn 0.3s ease-out backwards;
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Estado de Carregamento */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+  gap: 1rem;
+}
+
+/* Seletor de Modelo de IA */
+.modelSelector {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.modelButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modelButton:hover {
+  border-color: var(--text-secondary);
+  background: var(--background);
+}
+
+/* Estado Ativo (Selecionado) */
+.modelActive {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* Variação para o Clarifai (Roxo) */
+.modelActive.clarifai {
+  background: rgba(147, 51, 234, 0.15);
+  border-color: var(--accent-purple);
+  color: var(--accent-purple);
+}

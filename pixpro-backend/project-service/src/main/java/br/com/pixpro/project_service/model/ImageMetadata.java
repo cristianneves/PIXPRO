@@ -21,6 +21,7 @@ public class ImageMetadata {
     @Column(nullable = false)
     private String fileName;
 
+    @Column(nullable = true)
     private String originalStoragePath; // Caminho/URL da imagem original no MinIO/S3
 
     private String processedStoragePath; // Caminho/URL da imagem processada
@@ -28,6 +29,12 @@ public class ImageMetadata {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProcessingStatus status;
+
+    @Column(name = "ia_prompt", columnDefinition = "TEXT") // TEXT para prompts longos
+    private String prompt;
+
+    @Column(name = "ia_model_name")
+    private String modelName;
 
     // Relacionamento: Muitas imagens pertencem a UM projeto.
     // Esta é a chave estrangeira (project_id) no banco de dados.

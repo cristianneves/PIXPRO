@@ -1,0 +1,101 @@
+/* Remove o sublinhado e a cor padrão do Link */
+.cardLink {
+  text-decoration: none;
+  color: inherit;
+  outline: none;
+}
+
+.card {
+  /* Alinha com o design system */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  /* Animação de "lift" (levantar) no hover */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* Aplica o hover no card quando o link (pai) é hover */
+.cardLink:hover .card {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Foco para acessibilidade */
+.cardLink:focus-visible .card {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* Área da Imagem */
+.thumbnailContainer {
+  /* Define a altura da imagem */
+  height: 150px;
+  width: 100%;
+  background-color: var(--border); /* Fundo para o placeholder */
+}
+
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Placeholder (Carregando... / Sem Imagem) */
+.placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Adiciona uma animação sutil ao "Carregando..." */
+.loading {
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Conteúdo do Card */
+.cardFooter {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Faz o rodapé crescer para empurrar o conteúdo */
+}
+
+.projectName {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  /* Trunca nomes muito longos */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.imageCount {
+  /* Posiciona a contagem de imagens no final do card */
+  margin-top: auto; 
+  padding-top: 0.75rem; /* Espaço acima da contagem */
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  
+  /* Alinha o ícone e o texto */
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}

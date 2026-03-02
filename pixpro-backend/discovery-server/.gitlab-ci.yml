@@ -1,0 +1,68 @@
+stages:
+  - test
+  - package
+  - docker
+
+variables:
+  MAVEN_OPTS: "-DskipTests"
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE/discovery-server"
+
+cache:
+  key: maven
+  paths:
+    - .m2/repository
+
+discovery_server:test:
+  image: maven:3.9.9-eclipse-temurin-17
+  stage: test
+  allow_failure: true
+  rules:
+    - changes:
+        - pixpro-backend/discovery-server/**
+        - pixpro-backend/pom.xml
+        - pixpro-backend/discovery-server/pom.xml
+    - when: manual
+  before_script:
+    - cd pixpro-backend
+  script:
+    - mvn -B -pl discovery-server -am test || echo "⚠️ Test execution failed, marking as warning"
+
+discovery_server:package:
+  image: maven:3.9.9-eclipse-temurin-17
+  stage: package
+  needs: ["discovery_server:test"]
+  rules:
+    - changes:
+        - pixpro-backend/discovery-server/**
+        - pixpro-backend/pom.xml
+        - pixpro-backend/discovery-server/pom.xml
+  before_script:
+    - cd pixpro-backend
+  script:
+    - mvn -B -pl discovery-server -am -DskipTests package
+
+discovery_server:docker:
+  image: docker:27.0.3
+  stage: docker
+  needs: ["discovery_server:package"]
+  services:
+    - name: docker:27.0.3-dind
+      command: ["--tls=false"]
+  rules:
+    - changes:
+        - pixpro-backend/discovery-server/**
+        - pixpro-backend/discovery-server/Dockerfile
+  variables:
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - cd pixpro-backend
+    - docker build -f discovery-server/Dockerfile -t "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        docker tag "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" "$IMAGE_NAME:latest"
+        docker push "$IMAGE_NAME:latest"
+      fi

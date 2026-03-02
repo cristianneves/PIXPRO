@@ -1,0 +1,8 @@
+flask==3.0.3
+kafka-python-ng==2.2.2
+minio==7.2.10
+Pillow==10.4.0
+requests
+# Para o Gemini
+google-genai
+clarifai-grpc

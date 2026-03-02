@@ -1,6 +1,7 @@
 package br.com.pixpro.auth_service.service;
 
 import br.com.pixpro.auth_service.dto.LoginRequestDto;
+import br.com.pixpro.auth_service.dto.UpdateUserRequestDto;
 import br.com.pixpro.auth_service.exception.EmailAlreadyExistsException;
 import br.com.pixpro.auth_service.exception.UserNotFoundException;
 import br.com.pixpro.auth_service.model.Role;
@@ -12,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class AuthService {
@@ -52,9 +56,6 @@ public class AuthService {
     }
 
     public String login(LoginRequestDto loginRequest) {
-        // 1. O AuthenticationManager usa as credenciais para tentar autenticar o usuário.
-        // Ele buscará o usuário no banco e comparará as senhas usando o PasswordEncoder.
-        // Se as credenciais forem inválidas, ele lançará uma exceção (que será tratada pelo nosso GlobalExceptionHandler).
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.email(),
@@ -62,13 +63,43 @@ public class AuthService {
                 )
         );
 
-        // 2. Se a autenticação for bem-sucedida, buscamos os detalhes do usuário.
-        // Lançamos uma exceção se, por algum motivo, o usuário não for encontrado após a autenticação.
-        UserDetails user = userRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado após autenticação."));
+        User user = userRepository.findByEmail(loginRequest.email())
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
 
-        // 3. Geramos o token JWT para o usuário autenticado.
-        return jwtService.generateToken(user);
+        // Cria um mapa para adicionar informações extras
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("name", user.getName());
+
+        return jwtService.generateToken(extraClaims, user);
+    }
+
+    // 1. Buscar dados do usuário atual
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
+    }
+
+    // 2. Atualizar dados
+    public User updateUser(Long userId, UpdateUserRequestDto request) {
+        User user = getUserById(userId);
+
+        // Atualiza o nome se foi enviado
+        if (request.name() != null && !request.name().isBlank()) {
+            user.setName(request.name());
+        }
+
+        // Atualiza a senha se foi enviada (criptografando novamente)
+        if (request.password() != null && !request.password().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.password()));
+        }
+
+        return userRepository.save(user);
+    }
+
+    // 3. Deletar conta
+    public void deleteUser(Long userId) {
+        User user = getUserById(userId);
+        userRepository.delete(user);
     }
 
 }

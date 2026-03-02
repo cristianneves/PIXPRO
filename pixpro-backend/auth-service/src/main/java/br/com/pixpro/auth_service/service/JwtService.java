@@ -2,6 +2,7 @@ package br.com.pixpro.auth_service.service;
 
 import br.com.pixpro.auth_service.model.User;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
@@ -34,18 +35,23 @@ public class JwtService {
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        // Nunca mutar o mapa recebido; sempre copiar para um HashMap mutável
+        Map<String, Object> claims = new HashMap<>();
+        if (extraClaims != null) {
+            claims.putAll(extraClaims);
+        }
 
         if (userDetails instanceof User) { // Garante que o userDetails é a nossa classe User
             User user = (User) userDetails;
-            extraClaims.put("userId", user.getId());
+            claims.put("userId", user.getId());
             List<String> roles = user.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
-            extraClaims.put("roles", roles);
+            claims.put("roles", roles);
         }
 
         return Jwts.builder()
-                .setClaims(extraClaims)
+                .setClaims(claims)
                 .setSubject(userDetails.getUsername()) // O "dono" do token (no nosso caso, o e-mail)
                 .setIssuedAt(new Date(System.currentTimeMillis())) // Data de criação
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24)) // Validade de 24 horas
@@ -55,8 +61,13 @@ public class JwtService {
 
     // Valida se um token pertence a um usuário e se não expirou
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        try {
+            final String username = extractUsername(token);
+            return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        } catch (JwtException e) {
+            // Qualquer problema de parsing/expiração/malformed assinatura torna o token inválido
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {

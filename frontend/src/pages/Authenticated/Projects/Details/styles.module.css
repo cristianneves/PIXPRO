@@ -1,0 +1,169 @@
+.pageWrapper {
+  /* Usa o padding do layout, mas limita a largura para leitura */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2.5rem;
+}
+
+/* Cabeçalho da Página*/
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; 
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.5rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.metaInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.metaInfo p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Área de Upload */
+.uploadSection {
+  margin: 2.5rem 0;
+}
+
+.uploadSection h2 {
+  margin-bottom: 1rem;
+}
+
+.uploadLabel {
+  /* Estiliza o Label como um "Dropzone" */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2.5rem;
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background-color: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  
+  /* Animação */
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.uploadLabel:hover {
+  border-color: var(--accent-blue);
+  background-color: #1a2233;
+}
+
+.fileInput {
+  /* Esconde o input original */
+  width: 0;
+  height: 0;
+  opacity: 0;
+}
+
+/* Grid de Imagens*/
+.imageGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.noImagesText {
+  color: var(--text-secondary);
+  padding: 2rem;
+  text-align: center;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+/* Card de Miniatura de Imagem */
+.imageCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  
+  /* Animação de "lift" (levantar) no hover */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.imageCard:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.imageContainer {
+  width: 100%;
+  height: 200px;
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardContent {
+  padding: 1rem;
+  flex-grow: 1; 
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.fileName {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  word-break: break-all;
+  margin: 0;
+}
+
+.cardActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+/* Zona de Perigo */
+.dangerZone {
+  margin-top: 3rem;
+  padding: 1.5rem;
+  border: 1px solid var(--destructive-bg);
+  border-radius: 8px;
+  background: rgba(229, 62, 62, 0.05);
+}
+
+.dangerZone h3 {
+  color: var(--destructive-fg);
+  margin: 0 0 10px 0;
+}
+
+.dangerZone p {
+  margin: 0 0 15px 0;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}

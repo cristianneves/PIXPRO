@@ -37,7 +37,6 @@ public class AuthenticatedUser implements UserDetails {
         return email;
     }
 
-    // ... outros métodos de UserDetails podem retornar true ...
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }
     @Override public boolean isCredentialsNonExpired() { return true; }

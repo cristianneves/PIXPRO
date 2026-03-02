@@ -46,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail = jwtService.extractUsername(jwt);
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // NÃO buscamos mais no banco. Nós CONSTRUÍMOS o usuário a partir do token.
             Claims claims = jwtService.extractAllClaims(jwt);
             Long userId = claims.get("userId", Long.class);
             List<String> roles = claims.get("roles", List.class);

@@ -13,4 +13,9 @@ public class KafkaTopicConfig {
         return TopicBuilder.name("image-processing-queue")
                 .build();
     }
+
+    @Bean
+    public NewTopic imageResultsTopic() {
+        return TopicBuilder.name("image-processing-results").build();
+    }
 }

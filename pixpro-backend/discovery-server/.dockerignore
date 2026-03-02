@@ -1,0 +1,24 @@
+# Ignore VCS
+.git
+.gitignore
+
+# Maven build output
+**/target/
+
+# IDE files
+*.iml
+.idea/
+.vscode/
+
+# OS / misc
+.DS_Store
+*.log
+
+# Node modules (if any future frontend bits slip in)
+node_modules/
+
+# Docker
+Dockerfile*
+
+# Environment files (if they contain sensitive data)
+.env

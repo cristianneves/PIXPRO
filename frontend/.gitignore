@@ -1,0 +1,63 @@
+# Arquivo .gitignore para o projeto PixPro
+
+### Geral / Sistema Operacional ###
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+
+### IDEs e Editores ###
+# IntelliJ
+.idea/
+*.iml
+*.iws
+
+# VSCode
+.vscode/
+*.code-workspace
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+.nb-gradle/
+
+### Backend - Java / Spring Boot / Maven ###
+# Diretório de build do Maven
+**/target/
+
+# Arquivos temporários do Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+
+### Frontend - React / Vite / Node.js ###
+# Dependências do Node
+**/node_modules/
+
+# Diretório de build do Vite
+**/dist/
+**/dist-ssr/
+
+# Arquivos de ambiente locais (NUNCA SUBIR!)
+.env
+.env.local
+.env.*.local
+
+# Logs e arquivos de cache
+.npm
+.pnp.*
+coverage/

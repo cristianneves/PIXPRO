@@ -21,7 +21,6 @@ public class ApplicationConfig {
         this.userRepository = userRepository;
     }
 
-    // MOVEMOS ESTES BEANS PARA CÁ
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> userRepository.findByEmail(username)

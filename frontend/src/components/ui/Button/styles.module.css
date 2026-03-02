@@ -1,0 +1,77 @@
+.button {
+  /* Layout Flexível (A CORREÇÃO) */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  
+  /* Estilo Base */
+  padding: 10px 22px; 
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1; 
+  cursor: pointer;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  
+  /* Animações */
+  transition: all 0.2s ease-in-out;
+}
+
+/* Feedback Tátil */
+.button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Acessibilidade */
+.button:focus-visible {
+  outline: 2px solid var(--accent-blue, #3B82F6);
+  outline-offset: 2px;
+}
+
+/* Estado Desabilitado */
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/*VARIANTES DO BOTÃO*/
+
+/* Variante Primária (Ação Principal, CTA) */
+.primary {
+  /* O mesmo gradiente da marca usado no logo */
+  background-image: linear-gradient(to right, var(--accent-blue, #3B82F6), var(--accent-purple, #9333EA));
+  color: white;
+  border: none;
+  box-shadow: 0 4px 15px -5px rgba(147, 51, 234, 0.3);
+}
+
+.primary:hover:not(:disabled) {
+  /* Animação de "lift" (levantar) e sombra mais forte */
+  box-shadow: 0 6px 20px -5px rgba(147, 51, 234, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Variante Secundária (Outline/Contorno) */
+.secondary {
+  background-color: transparent;
+  border: 1px solid var(--border, #27272A); 
+  color: var(--text-secondary, #A1A1AA);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--border, #27272A);
+  color: var(--text-primary, #E4E4E7);
+}
+
+/* Variante Destrutiva (Excluir, Cancelar) */
+.destructive {
+  background-color: #450a0a;
+  color: #fca5a5;
+  border: none;
+}
+
+.destructive:hover:not(:disabled) {
+  background-color: #7f1d1d;
+  color: white;
+}
