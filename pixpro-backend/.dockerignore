@@ -1,0 +1,30 @@
+# Ignore VCS
+.git
+.gitignore
+
+# Maven build output
+**/target/
+
+# IDE files
+*.iml
+.idea/
+.vscode/
+
+# OS / misc
+.DS_Store
+*.log
+
+# Node modules
+node_modules/
+
+# Environment files
+**/.env
+
+# Service-specific dockerfiles (we're using the root one)
+*/Dockerfile
+
+# Processing service (Python)
+processing-service/
+
+# Individual service docker-compose files
+*/docker-compose.yml

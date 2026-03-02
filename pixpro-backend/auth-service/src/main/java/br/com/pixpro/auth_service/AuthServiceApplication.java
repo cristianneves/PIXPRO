@@ -11,6 +11,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.annotation.Profile;
 
 @EnableDiscoveryClient
 @SpringBootApplication
@@ -21,6 +22,7 @@ public class AuthServiceApplication {
 	}
 
 	@Bean
+	@Profile("!test")
 	public CommandLineRunner createAdminUser(UserRepository userRepository, PasswordEncoder passwordEncoder, @Value("${admin.email}") String adminEmail, @Value("${admin.password}") String adminPassword) {
 		return args -> {
 			// Verifica se o usuário admin já existe

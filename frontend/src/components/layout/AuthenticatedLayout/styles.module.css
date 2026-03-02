@@ -1,0 +1,84 @@
+:root {
+  --background: #121212;         /* Fundo principal super escuro */
+  --surface: #18181B;            /* Fundo da navbar (levemente mais claro) */
+  --border: #27272A;             /* Cor da borda */
+  --text-primary: #E4E4E7;       /* Texto principal */
+  --text-secondary: #A1A1AA;     /* Texto sutil (saudação) */
+  --accent-blue: #3B82F6;
+  --accent-purple: #9333EA;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2.5rem;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  
+  /* Efeito de gradiente no texto - o destaque do PixPro! */
+  background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.navRightItems {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.greeting {
+  font-size: 0.9rem;
+  color: var(--text-secondary); /* Cor mais sutil */
+}
+
+.logoutButton {
+  /* Layout flexível para alinhar ícone e texto */
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  background: var(--border);
+  color: var(--text-primary);
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  /* Adiciona animações suaves */
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.logoutButton:hover {
+  background-color: #3F3F46; /* Um pouco mais claro no hover */
+}
+
+.logoutButton:active {
+  /* Efeito "squish" ao clicar para feedback tátil */
+  transform: scale(0.97);
+}
+
+.content {
+  flex: 1;
+  padding: 2.5rem;
+  overflow-y: auto;
+}

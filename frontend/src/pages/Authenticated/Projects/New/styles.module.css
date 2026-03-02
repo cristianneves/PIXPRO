@@ -1,0 +1,91 @@
+/* Em: src/pages/Authenticated/Projects/New/styles.module.css */
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  /* Removemos o fundo branco para manter o padrão escuro da sua página */
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #E2E8F0; /* Texto claro */
+  margin-bottom: 2rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #A0AEC0; /* Cinza claro para o label */
+}
+
+/* * ESTA É A CORREÇÃO MAIS IMPORTANTE 
+ */
+.input,
+.textarea {
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #4A5568; /* Borda cinza escura */
+  border-radius: 8px;
+  background-color: #1A202C; /* Fundo "preto fosco" (azul-acinzentado escuro) */
+  
+  color: #F7FAFC; /* <-- COR DO TEXTO CLARA (BRANCA) */
+  /* Isso garante que você veja o que está digitando */
+
+  transition: all 0.2s ease-in-out;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #3182ce; /* Destaque azul ao focar */
+  background-color: #2D3748; /* Fica um pouco mais claro ao focar */
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.3);
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.submitButton {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #3182ce; /* Botão azul */
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  align-self: flex-start;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #2b6cb0;
+}
+
+.submitButton:disabled {
+  background-color: #4A5568;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.error {
+  color: #E53E3E; /* Vermelho para erros */
+  font-size: 0.9rem;
+}

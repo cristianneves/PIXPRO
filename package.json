@@ -1,0 +1,27 @@
+{
+  "name": "capstone-pixpro",
+  "version": "1.0.0",
+  "description": "Este documento define os padrões e as melhores práticas para contribuir com o código do projeto PixPro. O objetivo é manter um histórico de versionamento limpo, legível e automatizável.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docker:back-build": "cd pixpro-backend && docker-compose build",
+    "docker:back-up": "cd pixpro-backend && docker-compose up -d",
+    "docker:back-down": "cd pixpro-backend && docker-compose down",
+    "front:dev": "cd frontend && npm run dev",
+    "back:auth": "cd pixpro-backend/auth-service && mvnw spring-boot:run",
+    "back:project": "cd pixpro-backend/project-service && mvnw spring-boot:run",
+    "back:discovery": "cd pixpro-backend/discovery-service && mvnw spring-boot:run",
+    "back:notification": "cd pixpro-backend/notification-service && mvnw spring-boot:run",
+    "back:processing": "cd pixpro-backend/processing-service && python main.py",
+    "back:gateway": "cd pixpro-backend/api-gateway && mvnw spring-boot:run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "lefthook": "^2.0.2"
+  }
+}

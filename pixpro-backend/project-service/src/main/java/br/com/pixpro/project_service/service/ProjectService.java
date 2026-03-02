@@ -1,6 +1,7 @@
 package br.com.pixpro.project_service.service;
 
 import br.com.pixpro.project_service.dto.CreateProjectRequestDto;
+import br.com.pixpro.project_service.dto.GenerateImageRequestDto;
 import br.com.pixpro.project_service.dto.ImageMetadataDto;
 import br.com.pixpro.project_service.dto.UpdateProjectRequestDto;
 import br.com.pixpro.project_service.exception.ImageNotFoundException;
@@ -108,20 +109,24 @@ public class ProjectService {
      * @return Uma lista com os metadados das imagens que foram criadas.
      */
     @Transactional
-    public List<ImageMetadataDto> addImagesToProject(Long projectId, Long userId, List<MultipartFile> files) {
+    public List<ImageMetadataDto> addImagesToProject(Long projectId, Long userId, List<MultipartFile> files,
+                                                     String prompt, String modelName) { // <-- 1. Assinatura alterada
         Project project = findProjectById(projectId, userId);
 
         List<ImageMetadata> newImagesMetadata = files.stream().map(file -> {
-            // A. Primeiro, faz o upload do arquivo para o MinIO e obtém sua chave única.
             String storageKey = storageService.uploadFile(file);
             logger.info(">>> Arquivo {} salvo no MinIO com a chave: {}", file.getOriginalFilename(), storageKey);
 
-            // B. Cria a entidade de metadados com o caminho real.
             ImageMetadata metadata = new ImageMetadata();
             metadata.setFileName(file.getOriginalFilename());
             metadata.setProject(project);
             metadata.setStatus(ProcessingStatus.UPLOAD_PENDING);
-            metadata.setOriginalStoragePath(storageKey); // Salva o caminho real retornado pelo MinIO
+            metadata.setOriginalStoragePath(storageKey);
+
+            // --- 2. SALVE OS NOVOS DADOS NA ENTIDADE ---
+            metadata.setPrompt(prompt);
+            metadata.setModelName(modelName);
+            // --- FIM DA ADIÇÃO ---
 
             return metadata;
         }).collect(Collectors.toList());
@@ -131,11 +136,16 @@ public class ProjectService {
 
         // Envia uma mensagem para o Kafka para cada imagem salva
         savedMetadata.forEach(metadata -> {
+
+            // --- 3. ATUALIZE A MENSAGEM DO KAFKA ---
             var kafkaMessage = Map.of(
                     "imageId", metadata.getId(),
                     "userId", userId,
-                    "originalStoragePath", metadata.getOriginalStoragePath()
+                    "originalStoragePath", metadata.getOriginalStoragePath(),
+                    "prompt", metadata.getPrompt(),           // <-- NOVO
+                    "modelName", metadata.getModelName()   // <-- NOVO
             );
+            // --- FIM DA ATUALIZAÇÃO ---
 
             try {
                 kafkaProducerService.sendImageProcessingRequest(
@@ -147,7 +157,7 @@ public class ProjectService {
             }
         });
 
-        // Mapeia para o DTO de resposta da API
+        // Mapeia para o DTO de resposta da API (o DTO não mudou, está correto)
         return savedMetadata.stream()
                 .map(metadata -> new ImageMetadataDto(
                         metadata.getId(),
@@ -211,5 +221,80 @@ public class ProjectService {
 
         // Futuramente, aqui também seria o local para disparar um evento para deletar
         // o arquivo físico do armazenamento de objetos (MinIO/S3).
+    }
+
+    /**
+     * Gera um link de download temporário e seguro para uma imagem processada.
+     * @param projectId O ID do projeto.
+     * @param imageId O ID da imagem.
+     * @param userId O ID do usuário autenticado.
+     * @return Uma string contendo a URL pré-assinada.
+     */
+    @Transactional(readOnly = true)
+    public String generateDownloadUrlForImage(Long projectId, Long imageId, Long userId) {
+        // 1. Valida se o usuário é dono do projeto (reutilizando nossa lógica existente).
+        findProjectById(projectId, userId);
+
+        // 2. Busca os metadados da imagem no banco de dados.
+        ImageMetadata metadata = imageMetadataRepository.findById(imageId)
+                .orElseThrow(() -> new ImageNotFoundException("Imagem com ID " + imageId + " não encontrada."));
+
+        // 3. Valida se a imagem, de fato, pertence ao projeto informado.
+        if (!metadata.getProject().getId().equals(projectId)) {
+            throw new AccessDeniedException("A imagem não pertence ao projeto especificado.");
+        }
+
+        // 4. Valida se a imagem já foi processada com sucesso.
+        if (metadata.getStatus() != ProcessingStatus.COMPLETED || metadata.getProcessedStoragePath() == null) {
+            throw new IllegalStateException("O processamento da imagem ainda não foi concluído ou falhou.");
+        }
+
+        // 5. Se todas as validações passaram, chama o StorageService para gerar a URL.
+        return storageService.generatePresignedUrl(metadata.getProcessedStoragePath());
+    }
+
+    @Transactional
+    public ImageMetadataDto generateImageFromText(Long projectId, Long userId, GenerateImageRequestDto request) {
+        // 1. Valida acesso ao projeto
+        Project project = findProjectById(projectId, userId);
+
+        // 2. Cria o metadado "vazio" (sem arquivo original)
+        ImageMetadata metadata = new ImageMetadata();
+        // Gera um nome fictício para identificação
+        metadata.setFileName("AI_GEN_" + System.currentTimeMillis() + ".png");
+        metadata.setProject(project);
+        metadata.setStatus(ProcessingStatus.UPLOAD_PENDING); // ou PROCESSING
+        metadata.setPrompt(request.prompt());
+        metadata.setModelName(request.modelName());
+        metadata.setOriginalStoragePath(null); // Sem arquivo original!
+
+        ImageMetadata savedMetadata = imageMetadataRepository.save(metadata);
+
+        // 3. Envia mensagem para o Kafka com taskType TEXT2IMG
+        var kafkaMessage = Map.of(
+                "imageId", savedMetadata.getId(),
+                "userId", userId,
+                "prompt", savedMetadata.getPrompt(),
+                "modelName", savedMetadata.getModelName(),
+                "taskType", "TEXT2IMG" // <--- A CHAVE MÁGICA
+        );
+
+        try {
+            kafkaProducerService.sendImageProcessingRequest(
+                    "image-processing-queue",
+                    objectMapper.writeValueAsString(kafkaMessage)
+            );
+        } catch (Exception e) {
+            logger.error("!!! Falha ao enviar mensagem Kafka TEXT2IMG", e);
+            // Em produção, deveríamos marcar o status como FAILED aqui
+        }
+
+        return new ImageMetadataDto(
+                savedMetadata.getId(),
+                savedMetadata.getFileName(),
+                savedMetadata.getStatus(),
+                savedMetadata.getProject().getId(),
+                savedMetadata.getCreatedAt()
+        );
     }
 }

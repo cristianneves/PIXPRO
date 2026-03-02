@@ -1,0 +1,131 @@
+/* Animação de entrada suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.form {
+  /* Alinha com o Design System */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem 2.5rem 2.5rem 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  
+  /* Animação */
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* --- Cabeçalho do Formulário --- */
+.header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logoGradient {
+  /* O mesmo gradiente da marca */
+  background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.title {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin: 0.5rem 0 0 0;
+}
+
+/* --- Inputs Modernos com Ícones --- */
+.inputGroup {
+  position: relative;
+  margin-bottom: 1.25rem; /* Espaço entre os inputs */
+}
+
+.inputIcon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: var(--text-secondary);
+  /* Garante que o ícone não seja clicável */
+  pointer-events: none; 
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 15px 12px 45px; /* Padding esquerdo para o ícone */
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background-color: var(--background); /* Fundo mais escuro */
+  color: var(--text-primary);
+  font-size: 1rem;
+  box-sizing: border-box; /* Garante que padding não estoure a largura */
+  
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.inputField::placeholder {
+  color: var(--text-secondary);
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); /* "Brilho" de foco */
+}
+
+/* --- Estilo do Botão --- */
+.formButton {
+  /* Faz o nosso componente Button ocupar 100% da largura */
+  width: 100%;
+  margin-top: 1rem; /* Espaço acima do botão */
+}
+
+/* --- Erro e Link --- */
+.error {
+  color: #ff6b6b;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 1rem; /* Ajuste do espaçamento */
+  margin-top: 0;
+}
+
+.toggleLink {
+  margin-top: 1.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.toggleLink a {
+  color: var(--accent-blue);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.toggleLink a:hover {
+  text-decoration: underline;
+}

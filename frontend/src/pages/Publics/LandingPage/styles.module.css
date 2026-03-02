@@ -1,0 +1,127 @@
+/* Animação de entrada suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* Hero Section */
+.heroSection {
+  text-align: center;
+  padding: 4rem 1rem 3rem 1rem;
+  max-width: 800px;
+  width: 100%;
+  animation: fadeIn 0.8s ease-out;
+}
+
+.logoGradient {
+  /* O gradiente principal da marca */
+  background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  
+  font-size: clamp(3rem, 10vw, 4.5rem);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.1;
+}
+
+.slogan {
+  font-size: clamp(1.1rem, 4vw, 1.5rem);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 1rem 0 0.5rem 0;
+}
+
+.subSlogan {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin-bottom: 2.5rem;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Aumenta o padding do botão CTA principal */
+.ctaButton {
+  padding: 12px 24px;
+}
+
+/* Seção de Features */
+.features {
+  display: grid;
+  /* Cria um grid responsivo que se adapta ao tamanho */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 2rem;
+  animation: fadeIn 1.2s ease-out;
+}
+
+.featureCard {
+  /* Alinha com o design system (cards, navbar, etc) */
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: left;
+  
+  /* Animação de "lift" (levantar) no hover */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.featureIcon {
+  color: var(--accent-blue);
+  margin-bottom: 1rem;
+}
+
+.featureCard h3 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.featureCard p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Rodapé */
+.footer {
+  margin-top: auto;
+  padding: 2rem 0 1rem 0;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  animation: fadeIn 1.5s ease-out;
+}

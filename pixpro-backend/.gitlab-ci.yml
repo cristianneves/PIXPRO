@@ -1,0 +1,58 @@
+# Backend orchestrator for PixPro microservices
+# This file aggregates all backend service CI configs.
+
+stages:
+  - validate
+  - test
+  - package
+  - docker
+
+# AsyncAPI Schema Validation
+asyncapi:validate:
+  stage: validate
+  image: node:18-alpine
+  before_script:
+    - npm install -g @asyncapi/cli
+  script:
+    - asyncapi validate pixpro-backend/asyncapi.yaml
+    - echo "✓ AsyncAPI schema validation passed"
+  only:
+    changes:
+      - pixpro-backend/asyncapi.yaml
+      - pixpro-backend/.gitlab-ci.yml
+  artifacts:
+    when: always
+    paths:
+      - pixpro-backend/asyncapi.yaml
+    expire_in: 1 week
+
+# AsyncAPI Documentation Generation
+asyncapi:docs:
+  stage: validate
+  image: node:18-alpine
+  needs: ["asyncapi:validate"]
+  before_script:
+    - npm install -g @asyncapi/cli@2.16.9
+    - apk add --no-cache git
+  script:
+    - cd pixpro-backend
+    - echo "Generating AsyncAPI documentation..."
+    - asyncapi generate fromTemplate asyncapi.yaml @asyncapi/html-template@3.0.0 -o docs --use-new-generator --force-write
+    - echo "✓ AsyncAPI documentation ready"
+  artifacts:
+    when: always
+    paths:
+      - pixpro-backend/docs/
+    expire_in: 1 week
+  only:
+    changes:
+      - pixpro-backend/asyncapi.yaml
+      - pixpro-backend/.gitlab-ci.yml
+
+include:
+  - local: 'pixpro-backend/auth-service/.gitlab-ci.yml'
+  - local: 'pixpro-backend/project-service/.gitlab-ci.yml'
+  - local: 'pixpro-backend/notification-service/.gitlab-ci.yml'
+  - local: 'pixpro-backend/discovery-server/.gitlab-ci.yml'
+  - local: 'pixpro-backend/api-gateway/.gitlab-ci.yml'
+  - local: 'pixpro-backend/processing-service/.gitlab-ci.yml'

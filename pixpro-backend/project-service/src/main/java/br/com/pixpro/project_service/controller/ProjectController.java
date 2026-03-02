@@ -1,6 +1,7 @@
 package br.com.pixpro.project_service.controller;
 
 import br.com.pixpro.project_service.dto.CreateProjectRequestDto;
+import br.com.pixpro.project_service.dto.GenerateImageRequestDto;
 import br.com.pixpro.project_service.dto.ImageMetadataDto;
 import br.com.pixpro.project_service.dto.UpdateProjectRequestDto;
 import br.com.pixpro.project_service.model.AuthenticatedUser;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -60,10 +62,25 @@ public class ProjectController {
         return ResponseEntity.ok(project);
     }
 
+    @GetMapping("/{projectId}/images/{imageId}/download-url")
+    public ResponseEntity<Map<String, String>> getDownloadUrl(@PathVariable Long projectId,
+                                                              @PathVariable Long imageId,
+                                                              Authentication authentication) {
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+        String url = projectService.generateDownloadUrlForImage(projectId, imageId, user.getId());
+
+        // Retorna a URL dentro de um objeto JSON para uma resposta mais limpa.
+        Map<String, String> response = Map.of("downloadUrl", url);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/{projectId}/images")
     public ResponseEntity<List<ImageMetadataDto>> addImagesToProject(
             @PathVariable Long projectId,
             @RequestParam("files") List<MultipartFile> files,
+            @RequestParam("prompt") String prompt,
+            @RequestParam("modelName") String modelName,
             Authentication authentication) {
 
         logger.info(">>> Recebida requisição para adicionar {} imagens ao projeto {}", files.size(), projectId);
@@ -72,11 +89,35 @@ public class ProjectController {
         Long userId = user.getId();
         logger.info(">>> Usuário autenticado com ID: {}", userId);
 
-        logger.info(">>> Chamando o serviço ProjectService...");
-        List<ImageMetadataDto> createdMetadataDto = projectService.addImagesToProject(projectId, userId, files);
+        logger.info(">>> Chamando o serviço ProjectService com o prompt: [{}]", prompt);
+
+        // Passe os novos parâmetros para o serviço
+        List<ImageMetadataDto> createdMetadataDto = projectService.addImagesToProject(
+                projectId,
+                userId,
+                files,
+                prompt,
+                modelName
+        );
         logger.info(">>> Serviço executado com sucesso. Retornando {} metadados.", createdMetadataDto.size());
 
         return new ResponseEntity<>(createdMetadataDto, HttpStatus.CREATED);
+    }
+
+    // Novo endpoint para Geração (Text-to-Image)
+    @PostMapping("/{projectId}/generate")
+    public ResponseEntity<ImageMetadataDto> generateImage(
+            @PathVariable Long projectId,
+            @Valid @RequestBody GenerateImageRequestDto requestDto,
+            Authentication authentication) {
+
+        AuthenticatedUser user = (AuthenticatedUser) authentication.getPrincipal();
+
+        logger.info(">>> Requisição de Geração de Imagem: {}", requestDto.prompt());
+
+        ImageMetadataDto result = projectService.generateImageFromText(projectId, user.getId(), requestDto);
+
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")

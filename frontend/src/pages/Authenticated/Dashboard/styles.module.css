@@ -1,0 +1,111 @@
+/* O contêiner principal da página */
+.pageWrapper {
+  width: 100%;
+}
+
+/* O cabeçalho da página */
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+/* O grid que segura os cards */
+.projectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* O Novo Card de Adicionar */
+.addCard {
+  /* Layout */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 220px;
+
+  /* Estilo */
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+
+  /* Animação */
+  transition: all 0.2s ease-in-out;
+}
+
+.plusIcon {
+  font-size: 3rem;
+  transition: transform 0.2s ease;
+}
+
+/* Efeito de "brilho" ao passar o mouse */
+.addCard:hover {
+  border-color: var(--accent-blue);
+  background-color: #1a2233; /* Fundo azulado sutil */
+  color: var(--accent-blue);
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+}
+
+.addCard:hover .plusIcon {
+  transform: scale(1.1);
+}
+
+/* Estilos para Estados de Carregamento/Erro */
+
+.loadingState,
+.errorState {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.errorState {
+  color: var(--destructive-fg);
+  background-color: var(--destructive-bg);
+  border-radius: 8px;
+}
+
+/* Estilo do Estado Vazio */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  
+  margin-top: 3rem;
+  padding: 4rem 2rem;
+  
+  background-color: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.emptyState p {
+  margin: 0.5rem 0 0 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.emptyState span {
+  font-size: 0.9rem;
+}

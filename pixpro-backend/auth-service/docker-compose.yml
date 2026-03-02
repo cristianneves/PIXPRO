@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres-auth:
+    image: postgres:15
+    container_name: pixpro-postgres-auth
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: pixpro_auth_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-auth-data:

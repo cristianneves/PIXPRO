@@ -1,0 +1,71 @@
+# Arquivo gerado para o projeto PixPro
+# Ignora arquivos de dependências, logs, builds e configurações locais.
+
+# === Dependências ===
+# Ignora a pasta onde os pacotes do npm/yarn/pnpm são instalados.
+# Esta pasta pode ser recriada a qualquer momento executando `npm install` ou `yarn`.
+node_modules/
+
+# === Arquivos de Build e Produção ===
+# Ignora as pastas de saída geradas pelo processo de build (React, Node.js com TypeScript, etc).
+build/
+dist/
+.next/
+.out/
+
+# === Logs ===
+# Ignora arquivos de log gerados por aplicações ou gerenciadores de pacotes.
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# === Arquivos de Ambiente ===
+# Ignora arquivos de variáveis de ambiente locais.
+# É uma prática de segurança crucial para não versionar chaves de API e senhas.
+# Mantenha um arquivo .env.example no repositório como um modelo.
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# === Relatórios e Cache ===
+# Ignora relatórios de cobertura de testes e caches de ferramentas.
+coverage/
+.npm
+.yarn-cache
+.eslintcache
+
+# === Arquivos de Sistema Operacional ===
+# Ignora arquivos gerados automaticamente pelo sistema operacional.
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Pastas de Editores e IDEs ===
+# Ignora arquivos e pastas de configuração de ambientes de desenvolvimento.
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# JetBrains (WebStorm, etc.)
+.idea/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# === Arquivos Temporários ===
+# Ignora arquivos temporários e de swap.
+*.swp
+*~

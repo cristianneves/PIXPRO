@@ -1,39 +1,21 @@
 version: '3.8'
 
 services:
-  # BANCOS DE DADOS
-  postgres-auth:
-    image: postgres:15
-    container_name: pixpro-postgres-auth
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: pixpro_auth_db
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres-auth-data:/var/lib/postgresql/data
-
-  postgres-project:
-    image: postgres:15
-    container_name: pixpro-postgres-project
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: pixpro_project_db
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres-project-data:/var/lib/postgresql/data
-
-  # KAFKA E ZOOKEEPER (SISTEMA DE MENSAGERIA)
+  # ========================================
+  # INFRASTRUCTURE SERVICES
+  # ========================================
+  
+  # ZOOKEEPER (KAFKA DEPENDENCY)
   zookeeper:
     image: confluentinc/cp-zookeeper:7.2.1
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - pixpro-network
 
+  # KAFKA (MESSAGE BROKER)
   kafka:
     image: confluentinc/cp-kafka:7.2.1
     container_name: kafka
@@ -49,8 +31,10 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - pixpro-network
 
-  # MINIO (ARMAZENAMENTO DE OBJETOS COMPATÍVEL COM S3)
+  # MINIO (S3-COMPATIBLE OBJECT STORAGE)
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -63,6 +47,249 @@ services:
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9001"
+    networks:
+      - pixpro-network
+
+  # POSTGRESQL FOR AUTH-SERVICE
+  postgres-auth:
+    image: postgres:15-alpine
+    container_name: postgres-auth
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: pixpro_auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres-auth-data:/var/lib/postgresql/data
+    networks:
+      - pixpro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # POSTGRESQL FOR PROJECT-SERVICE
+  postgres-project:
+    image: postgres:15-alpine
+    container_name: postgres-project
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: pixpro_project_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - postgres-project-data:/var/lib/postgresql/data
+    networks:
+      - pixpro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========================================
+  # MICROSERVICES
+  # ========================================
+
+  # DISCOVERY SERVER (EUREKA)
+  discovery-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: discovery-server
+    image: pixpro/discovery-server:latest
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SERVER_PORT: 8761
+    networks:
+      - pixpro-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8761/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  # AUTH SERVICE
+  auth-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: auth-service
+    image: pixpro/auth-service:latest
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SERVER_PORT: 8081
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-auth:5432/pixpro_auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      JWT_SECRET_KEY: a2a6293f7f22f87a87c061b52a201c8286add5f7a083f2a3f7f87c061b52a201
+      ADMIN_EMAIL: admin@pixpro.com
+      ADMIN_PASSWORD: admin1234
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      postgres-auth:
+        condition: service_healthy
+    networks:
+      - pixpro-network
+    restart: on-failure
+
+  # PROJECT SERVICE
+  project-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: project-service
+    image: pixpro/project-service:latest
+    container_name: project-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SERVER_PORT: 8082
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-project:5432/pixpro_project_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: admin
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      JWT_SECRET_KEY: a2a6293f7f22f87a87c061b52a201c8286add5f7a083f2a3f7f87c061b52a201
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      AWS_S3_ENDPOINT: http://minio:9000
+        # NOVO: ENDEREÇO EXTERNO (Navegador para MinIO)
+      AWS_S3_PUBLIC_ENDPOINT: http://localhost:9000
+      AWS_S3_BUCKET_NAME: pixpro-images
+      AWS_S3_ACCESS_KEY_ID: minioadmin
+      AWS_S3_SECRET_ACCESS_KEY: minioadmin
+      AWS_REGION: us-east-1
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      postgres-project:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+    networks:
+      - pixpro-network
+    restart: on-failure
+
+  # NOTIFICATION SERVICE
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: notification-service
+    image: pixpro/notification-service:latest
+    container_name: notification-service
+    ports:
+      - "8443:8443"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SERVER_PORT: 8443
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+      JWT_SECRET_KEY: a2a6293f7f22f87a87c061b52a201c8286add5f7a083f2a3f7f87c061b52a201
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_KAFKA_CONSUMER_GROUP_ID: notification-service-group
+      SERVER_SSL_ENABLED: true
+      SERVER_SSL_KEY_STORE_TYPE: PKCS12
+      SERVER_SSL_KEY_STORE: classpath:keystore.p12
+      SERVER_SSL_KEY_STORE_PASSWORD: pixpro123
+      SERVER_SSL_KEY_ALIAS: pixpro-ssl
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    networks:
+      - pixpro-network
+    restart: on-failure
+
+  # API GATEWAY
+  api-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: api-gateway
+    image: pixpro/api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: default
+      SERVER_PORT: 8080
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-server:8761/eureka/
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+      project-service:
+        condition: service_started
+    networks:
+      - pixpro-network
+    restart: on-failure
+
+  # IMAGE PROCESSING SERVICE (Python)
+  processing-service:
+    build:
+      context: ./processing-service
+      dockerfile: Dockerfile
+    image: pixpro/processing-service:latest
+    container_name: processing-service
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      CLARIFAI_PAT: ${CLARIFAI_PAT}
+      HF_TOKEN: ${HF_TOKEN}
+      STABILITY_API_KEY: ${STABILITY_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      KAFKA_BROKER_URL: kafka:29092
+      IMAGE_PROCESSING_TOPIC: image-processing-queue
+      IMAGE_RESULTS_TOPIC: image-processing-results
+      MINIO_URL: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_NAME: pixpro-images
+      PORT: 5000
+    depends_on:
+      kafka:
+        condition: service_started
+      minio:
+        condition: service_started
+    networks:
+      - pixpro-network
+    restart: on-failure
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+
+
+networks:
+  pixpro-network:
+    driver: bridge
 
 volumes:
   postgres-auth-data:

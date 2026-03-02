@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  postgres-project:
+    image: postgres:15
+    container_name: pixpro-postgres-project
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: pixpro_project_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-project-data:/var/lib/postgresql/data
+
+volumes:
+  postgres-project-data:

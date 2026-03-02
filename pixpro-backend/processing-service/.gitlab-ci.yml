@@ -1,0 +1,29 @@
+stages:
+  - docker
+
+variables:
+  DOCKER_TLS_CERTDIR: "/certs"
+  IMAGE_NAME: "$CI_REGISTRY_IMAGE/processing-service"
+
+processing_service:docker:
+  image: docker:27.0.3
+  stage: docker
+  services:
+    - name: docker:27.0.3-dind
+      command: ["--tls=false"]
+  rules:
+    - changes:
+        - pixpro-backend/processing-service/**
+  variables:
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
+  script:
+    - cd pixpro-backend/processing-service
+    - docker build -f Dockerfile -t "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" .
+    - docker push "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "$CI_DEFAULT_BRANCH" ]; then
+        docker tag "$IMAGE_NAME:$CI_COMMIT_SHORT_SHA" "$IMAGE_NAME:latest"
+        docker push "$IMAGE_NAME:latest"
+      fi

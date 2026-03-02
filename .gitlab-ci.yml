@@ -1,0 +1,13 @@
+# Root orchestrator GitLab CI for PixPro
+# Delegates backend pipeline orchestration to pixpro-backend/.gitlab-ci.yml
+
+include:
+  - local: 'pixpro-backend/.gitlab-ci.yml'
+
+# Optional meta job (manual) to show pipeline context
+pipeline:info:
+  image: alpine:3.19
+  rules:
+    - when: manual
+  script:
+    - echo "Root pipeline including backend orchestrator executed at $(date)"

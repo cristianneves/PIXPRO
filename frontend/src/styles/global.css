@@ -1,0 +1,63 @@
+/* DEFINIÇÃO DAS VARIÁVEIS GLOBAIS DE COR (TEMA DARK) */
+:root {
+  /* Cores Base */
+  --background: #121212;
+  --surface: #18181B;
+  --border: #27272A;
+
+  /* Cores de Texto */
+  --text-primary: #E4E4E7;
+  --text-secondary: #A1A1AA;
+
+  /* Cores de Destaque (Accent) */
+  --accent-blue: #3B82F6;
+  --accent-purple: #9333EA;
+
+  /* Cores de Feedback (para botões, alertas) */
+  --destructive-bg: #450a0a;
+  --destructive-fg: #fca5a5;
+  --destructive-hover: #7f1d1d;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+
+  /* Aplica as cores globais e a fonte */
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  
+  color: var(--text-primary);
+  background-color: var(--background);
+
+  /* Melhora a renderização das fontes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  /* Garante que a app ocupe a tela inteira */
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-secondary);
+}
